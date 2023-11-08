@@ -46,13 +46,13 @@ ext {
     }
     configureMavenRepositories = { project ->
         { ->
-            def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
-            def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+            def snapshotsRepoUrl = 'https://maven.pkg.github.com/nomadgcs/mongo-java-driver'
+            def releasesRepoUrl = 'https://maven.pkg.github.com/nomadgcs/mongo-java-driver'
             maven {
                 url = project.version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
                 credentials {
-                    username project.hasProperty('nexusUsername') ? project.getProperty('nexusUsername') : ''
-                    password project.hasProperty('nexusPassword') ? project.getProperty('nexusPassword') : ''
+                    username project.hasProperty('ntcUser') ? project.getProperty('ntcUser') : ''
+                    password project.hasProperty('ntcToken') ? project.getProperty('ntcToken') : ''
                 }
             }
         }
@@ -76,7 +76,7 @@ def projectsWithManifest = publishedProjects.findAll {it.name != 'driver-legacy'
 
 configure(javaProjects) { project ->
     apply plugin: 'maven-publish'
-    apply plugin: 'signing'
+//    apply plugin: 'signing'
 
     task sourcesJar(type: Jar) {
         from project.sourceSets.main.allJava
@@ -105,16 +105,16 @@ configure(javaProjects) { project ->
     afterEvaluate {
         publishing.publications.mavenJava.artifactId = project.archivesBaseName
         publishing.publications.mavenJava.pom configurePom(project)
-        signing {
-            useInMemoryPgpKeys(findProperty("signingKey"), findProperty("signingPassword"))
-            sign publishing.publications.mavenJava
-        }
+//        signing {
+//            useInMemoryPgpKeys(findProperty("signingKey"), findProperty("signingPassword"))
+//            sign publishing.publications.mavenJava
+//        }
     }
 }
 
 configure(scalaProjects) { project ->
     apply plugin: 'maven-publish'
-    apply plugin: 'signing'
+//    apply plugin: 'signing'
 
     task sourcesJar(type: Jar) {
         from project.sourceSets.main.allScala
@@ -141,10 +141,10 @@ configure(scalaProjects) { project ->
 
     afterEvaluate {
         publishing.publications.mavenJava.pom configurePom(project)
-        signing {
-            useInMemoryPgpKeys(findProperty("signingKey"), findProperty("signingPassword"))
-            sign publishing.publications.mavenJava
-        }
+//        signing {
+//            useInMemoryPgpKeys(findProperty("signingKey"), findProperty("signingPassword"))
+//            sign publishing.publications.mavenJava
+//        }
     }
 }
 
