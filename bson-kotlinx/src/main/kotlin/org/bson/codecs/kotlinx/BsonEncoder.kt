@@ -38,11 +38,14 @@ import kotlinx.serialization.json.long
 import kotlinx.serialization.modules.SerializersModule
 import org.bson.BsonValue
 import org.bson.BsonWriter
+import org.bson.UuidRepresentation
 import org.bson.codecs.BsonValueCodec
 import org.bson.codecs.EncoderContext
+import org.bson.codecs.UuidCodec
 import org.bson.types.Decimal128
 import org.bson.types.ObjectId
 import java.math.BigDecimal
+import java.util.UUID
 
 /**
  * The BsonEncoder interface
@@ -65,6 +68,13 @@ public sealed interface BsonEncoder {
      */
     public fun encodeBsonValue(value: BsonValue)
 
+    /**
+     * Encodes a UUID
+     *
+     * @param value the UUID
+     */
+    public fun encodeUuid(value: UUID)
+
     /** @return the BsonWriter */
     public fun writer(): BsonWriter
 }
@@ -79,6 +89,7 @@ internal class DefaultBsonEncoder(
     companion object {
         val validKeyKinds = setOf(PrimitiveKind.STRING, PrimitiveKind.CHAR, SerialKind.ENUM)
         val bsonValueCodec = BsonValueCodec()
+        val uuidCodec = UuidCodec(UuidRepresentation.STANDARD)
         private val DOUBLE_MIN_VALUE = BigDecimal.valueOf(Double.MIN_VALUE)
         private val DOUBLE_MAX_VALUE = BigDecimal.valueOf(Double.MAX_VALUE)
         private val INT_MIN_VALUE = BigDecimal.valueOf(Int.MIN_VALUE.toLong())
@@ -205,6 +216,10 @@ internal class DefaultBsonEncoder(
 
     override fun encodeBsonValue(value: BsonValue) {
         bsonValueCodec.encode(writer, value, EncoderContext.builder().build())
+    }
+
+    override fun encodeUuid(value: UUID) {
+        uuidCodec.encode(writer, value, EncoderContext.builder().build())
     }
 
     override fun encodeJsonElement(element: JsonElement) = when(element) {

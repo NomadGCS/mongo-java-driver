@@ -46,9 +46,10 @@ import org.bson.BsonValue
 import org.bson.UuidRepresentation
 import org.bson.codecs.BsonValueCodec
 import org.bson.codecs.DecoderContext
+import org.bson.codecs.UuidCodec
 import org.bson.internal.UuidHelper
 import org.bson.types.ObjectId
-import java.util.Base64
+import java.util.*
 
 /**
  * The BsonDecoder interface
@@ -61,6 +62,8 @@ public sealed interface BsonDecoder {
     public fun decodeObjectId(): ObjectId
     /** @return the decoded BsonValue */
     public fun decodeBsonValue(): BsonValue
+    /** @return the decoded UUID */
+    public fun decodeUuid(): UUID
 
     /** @return the BsonReader */
     public fun reader(): BsonReader
@@ -87,6 +90,7 @@ internal open class DefaultBsonDecoder(
     companion object {
         val validKeyKinds = setOf(PrimitiveKind.STRING, PrimitiveKind.CHAR, SerialKind.ENUM)
         val bsonValueCodec = BsonValueCodec()
+        val uuidCodec = UuidCodec(UuidRepresentation.STANDARD)
         const val UNKNOWN_INDEX = -10
     }
 
@@ -198,6 +202,7 @@ internal open class DefaultBsonDecoder(
 
     override fun decodeObjectId(): ObjectId = readOrThrow({ reader.readObjectId() }, BsonType.OBJECT_ID)
     override fun decodeBsonValue(): BsonValue = bsonValueCodec.decode(reader, DecoderContext.builder().build())
+    override fun decodeUuid(): UUID = uuidCodec.decode(reader, DecoderContext.builder().build())
 
     @Suppress("ComplexMethod")
     override fun decodeJsonElement(): JsonElement = reader.run {

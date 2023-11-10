@@ -51,6 +51,7 @@ import org.bson.BsonValue
 import org.bson.RawBsonArray
 import org.bson.RawBsonDocument
 import org.bson.types.ObjectId
+import java.util.UUID
 
 /**
  * The default serializers module
@@ -61,7 +62,7 @@ import org.bson.types.ObjectId
  */
 @ExperimentalSerializationApi
 public val defaultSerializersModule: SerializersModule =
-    ObjectIdSerializer.serializersModule + BsonValueSerializer.serializersModule
+    ObjectIdSerializer.serializersModule + BsonValueSerializer.serializersModule + UuidSerializer.serializersModule
 
 @ExperimentalSerializationApi
 @Serializer(forClass = ObjectId::class)
@@ -132,5 +133,29 @@ public object BsonValueSerializer : KSerializer<BsonValue> {
         contextual(BsonDocument::class, BsonValueSerializer as KSerializer<BsonDocument>)
         contextual(RawBsonDocument::class, BsonValueSerializer as KSerializer<RawBsonDocument>)
         contextual(RawBsonArray::class, BsonValueSerializer as KSerializer<RawBsonArray>)
+    }
+}
+
+@ExperimentalSerializationApi
+@Serializer(forClass = UUID::class)
+public object UuidSerializer : KSerializer<UUID> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("UuidSerializer", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: UUID) {
+        when (encoder) {
+            is BsonEncoder -> encoder.encodeUuid(value)
+            else -> throw SerializationException("Uuid is not supported by ${encoder::class}")
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): UUID {
+        return when (decoder) {
+            is BsonDecoder -> decoder.decodeUuid()
+            else -> throw SerializationException("Uuid is not supported by ${decoder::class}")
+        }
+    }
+
+    public val serializersModule: SerializersModule = SerializersModule {
+        contextual(UUID::class, UuidSerializer)
     }
 }
